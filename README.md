@@ -416,9 +416,84 @@ D:\Projects\Lenny Growth\
 
 ---
 
-## 🚀 9. Start Commands & Operational Guide
+## 🚀 9. How Evaluators Run the Project on Their Own Machines
 
-### 9.1 Option A: One-Command Startup (Recommended)
+An evaluator can clone and run the entire project from scratch using these exact steps:
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/DEVARAJ-07/Lenny-Growth.git
+cd Lenny-Growth
+```
+
+### Step 2: Set Up Python Virtual Environment
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate it:
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# macOS / Linux:
+source .venv/bin/activate
+
+# Install dependencies:
+pip install -r requirements.txt
+```
+
+### Step 3: Install Frontend Dependencies
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+### Step 4: Configure Environment Variables
+```bash
+cp .env.example .env
+```
+*(The default settings run 100% locally with zero cloud dependencies required).*
+
+### Step 5: Pull Local Ollama Models
+Ensure [Ollama](https://ollama.ai) is installed and run:
+```bash
+ollama pull qwen2.5:3b
+ollama pull deepseek-r1:1.5b
+ollama pull llama3.2:3b
+ollama pull nomic-embed-text
+```
+
+### Step 6: Ingest the Transcripts into Local Vector DB
+```powershell
+$env:PYTHONPATH = "backend"
+python -m app.retrieval.ingest
+```
+
+### Step 7: Start the Stack
+#### Option A: One-Command Launcher (Windows)
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-all.ps1
+```
+
+#### Option B: Individual Terminals
+- **Terminal 1 (Ollama):** `ollama serve`
+- **Terminal 2 (Backend):** `uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000`
+- **Terminal 3 (Frontend):** `cd frontend && npm run dev`
+
+Open **`http://localhost:5173`** in the browser to interact with the assistant.
+
+### Step 8: Run Automated Tests
+```powershell
+$env:PYTHONPATH = "backend"
+pytest backend/tests -v
+```
+All **10 tests pass with 100% accuracy**.
+
+---
+
+## ⚡ 10. Start Commands & Operational Guide
+
+### 10.1 Option A: One-Command Startup (Recommended)
 Run the automated unified startup script:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-all.ps1
@@ -427,7 +502,7 @@ This script launches Ollama with CUDA acceleration, validates model availability
 
 ---
 
-### 9.2 Option B: Manual Step-by-Step Startup
+### 10.2 Option B: Manual Step-by-Step Startup
 
 #### Terminal 1: Start Ollama Daemon
 ```powershell
@@ -454,7 +529,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-### 9.3 Operational Maintenance Commands
+### 10.3 Operational Maintenance Commands
 
 - **Ingest / Re-Index All Transcripts**:
   ```powershell
@@ -472,16 +547,16 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## 🧪 10. Automated Tests, Locations, Results & Accuracy
+## 🧪 11. Automated Tests, Locations, Results & Accuracy
 
-### 10.1 Pytest Suite Execution
+### 11.1 Pytest Suite Execution
 Execute the automated test suite from the root directory:
 ```powershell
 $env:PYTHONPATH = "backend"
 & ".\.venv\Scripts\python.exe" -m pytest backend/tests -v
 ```
 
-### 10.2 Test Inventory & Results (10/10 Passed · 100% Accuracy)
+### 11.2 Test Inventory & Results (10/10 Passed · 100% Accuracy)
 
 | Test File Location | Test Function | Target Behavior / Assertion | Status |
 |---|---|---|---|
@@ -498,7 +573,7 @@ $env:PYTHONPATH = "backend"
 
 ---
 
-### 10.3 Golden Evaluation Suite Results (`scripts/five_chats_results.json`)
+### 11.3 Golden Evaluation Suite Results (`scripts/five_chats_results.json`)
 
 Five end-to-end benchmark questions were executed against the local `qwen2.5:3b` model to evaluate multi-turn switching, citation accuracy, and ground truth alignment:
 
@@ -512,7 +587,7 @@ Five end-to-end benchmark questions were executed against the local `qwen2.5:3b`
 
 ---
 
-### 10.4 Full 303-Episode Multi-Model Grounding & Training Benchmark (`scripts/train_and_verify_all_models.py`)
+### 11.4 Full 303-Episode Multi-Model Grounding & Training Benchmark (`scripts/train_and_verify_all_models.py`)
 
 To verify and train all models on the complete 303 episodes extracted from `c:\Users\HP\Downloads\lennys-podcast-transcripts-main.zip`:
 ```powershell
@@ -565,7 +640,7 @@ Answer: "Tobi Lütke mentions first principles thinking and infinite games in th
 
 ---
 
-### 10.5 Manual UI Verification Checklist
+### 11.5 Manual UI Verification Checklist
 
 | Test Case | Steps to Execute | Expected UI Behavior |
 |---|---|---|
@@ -578,7 +653,7 @@ Answer: "Tobi Lütke mentions first principles thinking and infinite games in th
 
 ---
 
-## 🔒 11. Security, Isolation & Production Readiness
+## 🔒 12. Security, Isolation & Production Readiness
 
 1. **Sandboxed HTML Artifact Isolation:**
    Artifacts are rendered via `<iframe sandbox="allow-scripts" srcdoc="...">`. The explicit omission of `allow-same-origin` ensures generated code cannot access the parent window's DOM, local storage, session storage, or authentication cookies.
@@ -589,7 +664,7 @@ Answer: "Tobi Lütke mentions first principles thinking and infinite games in th
 
 ---
 
-## 👨‍💻 12. Author & Engagement Handoff
+## 👨‍💻 13. Author & Engagement Handoff
 
 - **Engagement Role:** Forward Deployed Engineer (FDE)
 - **Project:** The Lenny Growth Assistant
