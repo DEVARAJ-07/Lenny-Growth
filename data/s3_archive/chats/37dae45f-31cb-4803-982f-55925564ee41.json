@@ -1,0 +1,15 @@
+{
+  "chat_id": "37dae45f-31cb-4803-982f-55925564ee41",
+  "title": "What does Hila Qu emphasize about adding",
+  "archived_at": "2026-10-10T17:08:24.086436+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Hila Qu emphasize about adding a product-led growth (PLG) motion?"
+    },
+    {
+      "role": "assistant",
+      "content": "Hila Qu emphasizes that adding a product-led growth (PLG) motion is not an either-or proposition but rather a complementary approach that can benefit both early adopters and enterprise-level customers. She highlights that PLG can help lower the barrier for more people to try a product and broaden reach, which is particularly valuable for startups. She also mentions that sales teams are crucial for closing big orders and building strong foundations for revenue, especially for companies in the enterprise space.\n\nRegarding the popularity of PLG, Hila Qu explains that PLG has become popular because traditionally, in B2B, sales teams have been the main motion for closing deals. However, with the rise of user-friendly self-serve experiences and the increasing demand for self-serve options, PLG has become more popular. She also notes that B2B users are increasingly trained to use products and make decisions based on their own experiences, making PLG a more viable option.\n\nHila Qu further explains that PLG involves a self-serve component, quick time to value, a self-serve checkout experience, a data foundation for understanding what to build on and how to monetize users, and simple pricing that people understand. She recommends that the first step for companies considering PLG is to understand the PLG funnel and the sales-led funnel, and to think about the org structure needed to manage these motions data-driven. She suggests creating a head of growth product, a head of growth marketing, and a head of product-led sales to manage the PLG motion effectively."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "chat_id": "68f4072c-3d59-48dd-9862-46443c9f594c",
+  "title": "What does Adam Fishman say about onboard",
+  "archived_at": "2026-10-10T16:32:43.343453+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Adam Fishman say about onboarding?"
+    },
+    {
+      "role": "assistant",
+      "content": "Adam Fishman emphasizes the importance of onboarding as a critical part of the product experience where 100% of users will engage. He highlights that onboarding is the first opportunity a company has to deliver on the promise they made to their customers. Fishman stresses the importance of aligning the brand's promise with the product's experience. He mentions that onboarding is also the first chance for a customer to be either excited or disappointed in what they expected. Fishman has found that optimizing onboarding can significantly impact retention and the success of early users. He also advocates for having a dedicated team focused on activation experiences, including onboarding. Lastly, he shares a concrete example from Patreon where improving the onboarding experience for creators led to a 25% improvement in their first and second month revenue, thereby improving their overall value on the platform."
+    }
+  ]
+}

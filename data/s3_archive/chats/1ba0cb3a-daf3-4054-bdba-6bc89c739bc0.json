@@ -1,0 +1,15 @@
+{
+  "chat_id": "1ba0cb3a-daf3-4054-bdba-6bc89c739bc0",
+  "title": "What does Adam Fishman say about growth ",
+  "archived_at": "2026-10-10T16:40:34.852334+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Adam Fishman say about growth loops?"
+    },
+    {
+      "role": "assistant",
+      "content": "According to Adam Fishman (00:21:28), the third competency in his growth competency model is growth strategy. Within this, the first growth strategy competency he mentions is growth loop modeling. This involves understanding how one grows users, retains them, and monetizes them."
+    }
+  ]
+}

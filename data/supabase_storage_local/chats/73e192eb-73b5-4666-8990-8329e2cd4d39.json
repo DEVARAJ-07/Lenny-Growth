@@ -1,0 +1,15 @@
+{
+  "chat_id": "73e192eb-73b5-4666-8990-8329e2cd4d39",
+  "title": "can you write a paragraph about shreyas ",
+  "archived_at": "2026-10-11T06:51:13.685080+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "can you write a paragraph about shreyas doshi in 10 words"
+    },
+    {
+      "role": "assistant",
+      "content": "Shreyas Doshi shares wisdom on product management, influencing tech leaders with his insights."
+    }
+  ]
+}

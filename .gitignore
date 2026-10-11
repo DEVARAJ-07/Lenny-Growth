@@ -1,0 +1,53 @@
+# ==============================================================================
+# The Lenny Growth Assistant - Root .gitignore
+# ==============================================================================
+
+# Virtual Environments (Machine-specific binaries - NEVER commit)
+.venv/
+venv/
+ENV/
+env/
+.env/
+
+# Python cache & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+*.pyd
+
+# Node.js & Frontend dependencies / build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+.vite/
+
+# Large SQLite & Local databases (>100MB exceeds GitHub push limits; generated via ingest script)
+*.db
+*.sqlite
+*.sqlite3
+lenny_growth.db
+backend/lenny_growth.db
+
+# Secrets & Environment variables (Supply .env.example with placeholders instead)
+.env
+backend/.env
+frontend/.env
+*.local
+*.env.local
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo

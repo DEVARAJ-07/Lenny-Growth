@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Outer Dark Circle Background -->
+  <circle cx="32" cy="32" r="30" fill="#221711" />
+  <!-- Amber Circular Contour Ring -->
+  <circle cx="32" cy="32" r="28" stroke="#D97736" stroke-width="2.5" />
+  <circle cx="32" cy="32" r="25.5" stroke="#D97736" stroke-width="0.8" stroke-opacity="0.4" />
+  
+  <!-- Geometric Drawn Wolf Face -->
+  <!-- Outer Head Contour & Ears -->
+  <path
+    d="M 19 15 L 26 21 L 32 18 L 38 21 L 45 15 L 43 26 L 49 32 L 43 36 L 47 42 L 39 45 L 32 52 L 25 45 L 17 42 L 21 36 L 15 32 L 21 26 Z"
+    stroke="#D97736"
+    stroke-width="2"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  
+  <!-- Forehead Crest & Brow Diamond -->
+  <path
+    d="M 32 18 L 28 25 L 32 30 L 36 25 Z"
+    stroke="#D97736"
+    stroke-width="1.6"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  
+  <!-- Inner Ears -->
+  <path
+    d="M 22 19 L 26 25 M 42 19 L 38 25"
+    stroke="#D97736"
+    stroke-width="1.4"
+    stroke-linecap="round"
+  />
+  
+  <!-- Eye Angled Accents -->
+  <path
+    d="M 22 28 L 28 32 M 42 28 L 36 32"
+    stroke="#D97736"
+    stroke-width="1.6"
+    stroke-linecap="round"
+  />
+  
+  <!-- Stylized Muzzle & Nose Bridge -->
+  <path
+    d="M 32 30 L 32 35 M 28 35 L 32 41 L 36 35 L 32 35 Z"
+    stroke="#D97736"
+    stroke-width="1.8"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  
+  <!-- Cheek Inner Facet Lines -->
+  <path
+    d="M 28 35 L 21 36 M 36 35 L 43 36 M 32 41 L 32 52"
+    stroke="#D97736"
+    stroke-width="1.5"
+    stroke-linecap="round"
+  />
+</svg>

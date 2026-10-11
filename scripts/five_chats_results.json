@@ -1,0 +1,86 @@
+{
+  "suite": "Lenny Growth Assistant 5-Chat Verification",
+  "chat_switching_verified": true,
+  "results": [
+    {
+      "test_id": 1,
+      "chat_id": "99a673c8-9b8f-47df-be3d-182947ec4804",
+      "title": "Elena Verna Growth Tactics",
+      "question": "What are the growth tactics that never work according to Elena Verna?",
+      "model": "qwen2.5:3b",
+      "elapsed_s": 37.46,
+      "latency_ms": 37406,
+      "citations_count": 0,
+      "answer_preview": "According to Elena Verna, the growth tactics that never work include:\n\n1. Assuming you need a dedicated growth team to figure out your product-market fit and distribution strategy. She emphasizes that growth is not a one-size-fits-all solution and that growth can only amplify great product-market fi",
+      "ground_truth_matches": [
+        "Thinking you need a growth team before finding PMF/distribution",
+        "Rebrands or marketing site redesigns expecting acquisition spikes"
+      ],
+      "accuracy_score": "66%"
+    },
+    {
+      "test_id": 2,
+      "chat_id": "a8bdfc3e-45a3-4503-b838-8fbef4413fe9",
+      "title": "Shreyas Doshi High Agency",
+      "question": "What does Shreyas Doshi say about high agency and solving problems in product management?",
+      "model": "qwen2.5:3b",
+      "elapsed_s": 7.09,
+      "latency_ms": 7038,
+      "citations_count": 0,
+      "answer_preview": "According to Shreyas Doshi (01:11:55), high agency is about finding a way to get what you want without waiting for conditions to be perfect or blaming the circumstances. For product managers, this means consistently finding solutions to adverse conditions such as insufficient resources, challenges w",
+      "ground_truth_matches": [
+        "Bending reality to your will rather than accepting default constraints",
+        "Viewing constraints as puzzles to solve"
+      ],
+      "accuracy_score": "100%"
+    },
+    {
+      "test_id": 3,
+      "chat_id": "529d564d-2746-4a5a-9001-28f13a2b9a0b",
+      "title": "Brian Chesky Founder Mode",
+      "question": "What does Brian Chesky explain about moving away from traditional product management to a functional organization at Airbnb?",
+      "model": "qwen2.5:3b",
+      "elapsed_s": 9.67,
+      "latency_ms": 9609,
+      "citations_count": 0,
+      "answer_preview": "Brian Chesky explains that at Airbnb, they have moved away from the traditional product management function to a more functional organization. Specifically, he describes the following changes:\n\n1. **Combining Responsibilities**: They combined what one might call the inbound product development respo",
+      "ground_truth_matches": [
+        "Elevating design and product marketing",
+        "Leaders being deep in details rather than hands-off"
+      ],
+      "accuracy_score": "66%"
+    },
+    {
+      "test_id": 4,
+      "chat_id": "a00dfbc4-89e6-42d8-955f-153851167a04",
+      "title": "Hila Qu PLG Motion",
+      "question": "What does Hila Qu emphasize about adding a product-led growth (PLG) motion?",
+      "model": "qwen2.5:3b",
+      "elapsed_s": 13.35,
+      "latency_ms": 13312,
+      "citations_count": 0,
+      "answer_preview": "Hila Qu emphasizes several key points about adding a product-led growth (PLG) motion:\n\n1. **PLG is not a binary choice**: She stresses that it's not either PLG or sales, but both. She mentions that many startups end up adding sales teams eventually, and that sales-led enterprise products are realizi",
+      "ground_truth_matches": [
+        "Self-serve onboarding and user activation",
+        "Product Qualified Leads (PQLs)",
+        "Aligning product-led motion with sales motion"
+      ],
+      "accuracy_score": "100%"
+    },
+    {
+      "test_id": 5,
+      "chat_id": "a114f9cf-2f03-4567-be45-d283a92dbdbd",
+      "title": "Gustaf Alstromer Retention",
+      "question": "What does Gustaf Alstromer from YC say is the most important metric for startups?",
+      "model": "qwen2.5:3b",
+      "elapsed_s": 8.79,
+      "latency_ms": 8744,
+      "citations_count": 0,
+      "answer_preview": "According to Gustaf Alstr\u00f6mer (00:22:36) from YC, the most important mistake that early stage startups make is not talking to customers. He states, \"Startups fail, one, because they don't talk to customers. And if you don't talk to customers or users, you don't actually know what's important. If you",
+      "ground_truth_matches": [
+        "Retention is the prerequisite for growth"
+      ],
+      "accuracy_score": "33%"
+    }
+  ]
+}

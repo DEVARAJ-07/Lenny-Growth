@@ -1,0 +1,15 @@
+{
+  "chat_id": "962f3457-87f6-45ab-9573-21a55b790772",
+  "title": "What does Elena Verna emphasize regardin",
+  "archived_at": "2026-10-11T05:55:11.462130+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Elena Verna emphasize regarding product-led growth vs sales-led growth?"
+    },
+    {
+      "role": "assistant",
+      "content": "Elena Verna emphasizes that product-led growth is more suitable for companies that have clear product-market fit and a strong product-led motion for acquisition, activation, monetization, and retention. She advises hiring a growth team earlier in the lifecycle for product-led companies, especially those with a high ARR, as they rely more heavily on product-led components. For sales-led companies, she suggests waiting to hire a growth team until overlaying product-led growth on top of their existing sales motion. Growth teams are crucial for companies slowing down or experiencing a decline, but for mature companies, they should only be brought in after core product and marketing issues are addressed."
+    }
+  ]
+}

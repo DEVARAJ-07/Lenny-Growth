@@ -1,0 +1,15 @@
+{
+  "chat_id": "1a7f1d24-94f7-4e90-8906-9b1cd0a2b07e",
+  "title": "say hello",
+  "archived_at": "2026-10-10T16:38:54.135956+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "say hello"
+    },
+    {
+      "role": "assistant",
+      "content": "According to Ada Chen Rekhi (00:17:21), if you want to reach out to her, you can find her online at adachen.com or adachen@gmail.com, and she'd love to hear any feedback or riffs on the ideas and topics they've shared."
+    }
+  ]
+}

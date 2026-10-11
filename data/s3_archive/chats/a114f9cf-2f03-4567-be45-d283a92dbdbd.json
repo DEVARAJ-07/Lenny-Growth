@@ -1,0 +1,15 @@
+{
+  "chat_id": "a114f9cf-2f03-4567-be45-d283a92dbdbd",
+  "title": "What does Gustaf Alstromer from YC say i",
+  "archived_at": "2026-10-10T17:01:35.508331+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Gustaf Alstromer from YC say is the most important metric for startups?"
+    },
+    {
+      "role": "assistant",
+      "content": "According to Gustaf Alstr\u00f6mer (00:22:36) from YC, the most important mistake that early stage startups make is not talking to customers. He states, \"Startups fail, one, because they don't talk to customers. And if you don't talk to customers or users, you don't actually know what's important. If you don't know what's important, it doesn't matter what you build, it doesn't matter kind of what ideas you have in your head if you don't actually know what it is that you need to build and you don't validate with customers.\" This indicates that understanding customer needs and validating ideas through customer interactions is the most critical metric for startups."
+    }
+  ]
+}

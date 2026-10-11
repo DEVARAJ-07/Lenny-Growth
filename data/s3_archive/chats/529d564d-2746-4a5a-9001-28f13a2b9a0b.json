@@ -1,0 +1,15 @@
+{
+  "chat_id": "529d564d-2746-4a5a-9001-28f13a2b9a0b",
+  "title": "What does Brian Chesky explain about mov",
+  "archived_at": "2026-10-10T17:01:13.329105+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Brian Chesky explain about moving away from traditional product management to a functional organization at Airbnb?"
+    },
+    {
+      "role": "assistant",
+      "content": "Brian Chesky explains that at Airbnb, they have moved away from the traditional product management function to a more functional organization. Specifically, he describes the following changes:\n\n1. **Combining Responsibilities**: They combined what one might call the inbound product development responsibilities of a product manager with the outbound or marketing responsibilities of product marketing. This means that the product development and marketing aspects of the role are now combined.\n\n2. **Offboarding Program Management Functions**: They offboarded much of the program management functions that product managers may do to actual program managers. This indicates that some of the program management responsibilities traditionally handled by product managers are now handled by program managers.\n\n3. **Reducing Junior Product Marketers**: They made the group smaller and more senior. This means there are fewer junior product marketers, and the most senior people are now referred to as product marketers.\n\n4. **Keeping Product Focus**: Despite these changes, they still have people helping drive the product. The focus remains on ensuring the product is driven by the team, with Brian himself being very involved in the details and ensuring the product is driven.\n\nIn essence, Airbnb has shifted from a traditional product management structure to a more integrated, functional structure where product development and marketing responsibilities are combined, and some program management functions have been offboarded. This change aims to keep the product focus while reducing the traditional product management roles."
+    }
+  ]
+}

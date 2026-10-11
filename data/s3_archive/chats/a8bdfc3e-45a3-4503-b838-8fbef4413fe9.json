@@ -1,0 +1,15 @@
+{
+  "chat_id": "a8bdfc3e-45a3-4503-b838-8fbef4413fe9",
+  "title": "What does Shreyas Doshi say about high a",
+  "archived_at": "2026-10-10T17:01:03.643023+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Shreyas Doshi say about high agency and solving problems in product management?"
+    },
+    {
+      "role": "assistant",
+      "content": "According to Shreyas Doshi (01:11:55), high agency is about finding a way to get what you want without waiting for conditions to be perfect or blaming the circumstances. For product managers, this means consistently finding solutions to adverse conditions such as insufficient resources, challenges with legacy infrastructure, staffing issues, and customer problems. Doshi emphasizes that high agency is particularly important for product managers because they are constantly facing these challenges. He suggests that PMs who demonstrate high agency are able to push through these adversities or even reverse them to achieve their goals. This trait is crucial for product managers as it enables them to find solutions and move forward even when conditions are not ideal."
+    }
+  ]
+}
