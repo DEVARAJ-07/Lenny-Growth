@@ -1,28 +1,20 @@
 """
 Hybrid search engine combining vector cosine similarity + lexical keyword search
 merged via Reciprocal Rank Fusion (RRF).
+High-performance in-memory cached vector index with NumPy acceleration.
 Includes threshold cutoff for refusal mode ("the transcripts don't cover this").
 """
+import os
+import json
 import math
 import re
+import sqlite3
 from typing import List, Dict, Any, Tuple, Optional
-from sqlalchemy import select
+import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models import Chunk, Document
 from app.retrieval.embeddings import embedding_client
 from app.config import settings
 from app.logging import logger
-
-
-def cosine_similarity(v1: List[float], v2: List[float]) -> float:
-    if not v1 or not v2 or len(v1) != len(v2):
-        return 0.0
-    dot_product = sum(a * b for a, b in zip(v1, v2))
-    norm_v1 = math.sqrt(sum(a * a for a in v1))
-    norm_v2 = math.sqrt(sum(b * b for b in v2))
-    if norm_v1 == 0.0 or norm_v2 == 0.0:
-        return 0.0
-    return dot_product / (norm_v1 * norm_v2)
 
 
 STOPWORDS = {
@@ -103,41 +95,132 @@ class SearchResult:
 
 
 class HybridSearchEngine:
+    def __init__(self):
+        self.matrix: Optional[np.ndarray] = None
+        self.metadata: List[Dict[str, Any]] = []
+        self._initialized = False
+
+    def _ensure_index_loaded(self):
+        """Loads cached in-memory NumPy vector matrix and metadata, or builds from SQLite."""
+        if self._initialized:
+            return
+
+        cache_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data")
+        npz_file = os.path.join(cache_dir, "search_index.npz")
+        meta_file = os.path.join(cache_dir, "search_metadata.json")
+
+        if os.path.exists(npz_file) and os.path.exists(meta_file):
+            try:
+                data = np.load(npz_file)
+                self.matrix = data["matrix"]
+                with open(meta_file, "r", encoding="utf-8") as f:
+                    self.metadata = json.load(f)
+                self._initialized = True
+                logger.info("vector_search_cache_loaded", total_chunks=len(self.metadata))
+                return
+            except Exception as e:
+                logger.warning("failed_to_load_vector_cache", error=str(e))
+
+        # Fallback to loading from SQLite lenny_growth.db
+        db_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "lenny_growth.db")
+        if not os.path.exists(db_path):
+            db_path = "lenny_growth.db"
+
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            rows = conn.execute("""
+                SELECT c.id, c.document_id, c.start_ref, c.speaker, c.text, c.embedding, d.guest, d.title, d.source_url
+                FROM chunks c
+                JOIN documents d ON c.document_id = d.id
+            """).fetchall()
+            conn.close()
+
+            embeddings = []
+            metadata = []
+            for r in rows:
+                emb = json.loads(r[5]) if r[5] else None
+                if emb:
+                    embeddings.append(emb)
+                    metadata.append({
+                        "chunk_id": r[0],
+                        "document_id": r[1],
+                        "start_ref": r[2] or "00:00:00",
+                        "speaker": r[3] or r[6],
+                        "text": r[4],
+                        "guest": r[6],
+                        "title": r[7],
+                        "youtube_url": r[8]
+                    })
+
+            if embeddings:
+                mat = np.array(embeddings, dtype=np.float32)
+                norms = np.linalg.norm(mat, axis=1, keepdims=True)
+                norms[norms == 0] = 1.0
+                mat /= norms
+                self.matrix = mat
+                self.metadata = metadata
+                self._initialized = True
+
+                # Persist cache for fast future boots
+                try:
+                    os.makedirs(cache_dir, exist_ok=True)
+                    np.savez_compressed(npz_file, matrix=mat)
+                    with open(meta_file, "w", encoding="utf-8") as f:
+                        json.dump(metadata, f)
+                    logger.info("vector_search_cache_created", total_chunks=len(metadata))
+                except Exception as e:
+                    logger.warning("failed_saving_vector_cache", error=str(e))
+
     async def search(
         self,
         query: str,
-        session: AsyncSession,
+        session: Optional[AsyncSession] = None,
         top_k: int = 6,
         rrf_k: int = 60
     ) -> Tuple[List[SearchResult], bool]:
         """
-        Executes hybrid search and returns (results, is_covered).
-        is_covered is False if the maximum relevance score falls below threshold.
+        Executes hybrid search accelerated by NumPy vector operations and candidate pruning.
+        Returns (results, is_covered).
         """
-        # 1. Generate query embedding
-        query_embedding = await embedding_client.get_embedding(query)
+        self._ensure_index_loaded()
 
-        # 2. Fetch candidate chunks joined with document metadata
-        stmt = select(Chunk, Document).join(Document, Chunk.document_id == Document.id)
-        res = await session.execute(stmt)
-        rows = res.all()
-
-        if not rows:
+        if self.matrix is None or not self.metadata:
             logger.warning("no_chunks_found_in_database")
             return [], False
 
-        # 3. Compute vector and lexical rankings
-        scored_candidates = []
-        for chunk, doc in rows:
-            v_score = 0.0
-            if chunk.embedding and query_embedding:
-                v_score = cosine_similarity(query_embedding, chunk.embedding)
-            
-            l_score = lexical_score(query, chunk.text, doc.guest, doc.title)
+        # 1. Generate query embedding
+        query_embedding = await embedding_client.get_embedding(query)
+        if not query_embedding:
+            return [], False
 
+        q_vec = np.array(query_embedding, dtype=np.float32)
+        q_norm = np.linalg.norm(q_vec)
+        if q_norm > 0:
+            q_vec /= q_norm
+
+        # 2. Fast NumPy matrix-vector dot product (Vector similarity)
+        sims = np.dot(self.matrix, q_vec)
+
+        # 3. Build candidate set: top 120 vector candidates + any guest/title keyword matches
+        top_indices = set(np.argsort(sims)[::-1][:120])
+
+        raw_tokens = [t for t in re.findall(r"\w+", query.lower()) if t not in STOPWORDS and len(t) > 1]
+        if raw_tokens:
+            for idx, item in enumerate(self.metadata):
+                g = item["guest"].lower()
+                t = item["title"].lower()
+                if any(token in g or token in t for token in raw_tokens):
+                    top_indices.add(idx)
+
+        # 4. Score candidates on lexical overlap and compute RRF
+        scored_candidates = []
+        for idx in top_indices:
+            item = self.metadata[idx]
+            v_score = float(sims[idx])
+            l_score = lexical_score(query, item["text"], item["guest"], item["title"])
             scored_candidates.append({
-                "chunk": chunk,
-                "doc": doc,
+                "idx": idx,
+                "item": item,
                 "v_score": v_score,
                 "l_score": l_score,
             })
@@ -152,24 +235,22 @@ class HybridSearchEngine:
         for rank, item in enumerate(scored_candidates):
             item["lexical_rank"] = rank + 1
 
-        # 4. Compute Reciprocal Rank Fusion (RRF) score
+        # Reciprocal Rank Fusion (RRF)
         results: List[SearchResult] = []
         for item in scored_candidates:
             v_rank = item["vector_rank"]
             l_rank = item["lexical_rank"]
             rrf = (1.0 / (rrf_k + v_rank)) + (1.0 / (rrf_k + l_rank))
-
-            chunk = item["chunk"]
-            doc = item["doc"]
+            meta = item["item"]
             results.append(SearchResult(
-                chunk_id=chunk.id,
-                document_id=doc.id,
-                guest=doc.guest,
-                title=doc.title,
-                youtube_url=doc.source_url,
-                start_ref=chunk.start_ref or "00:00:00",
-                speaker=chunk.speaker or doc.guest,
-                text=chunk.text,
+                chunk_id=meta["chunk_id"],
+                document_id=meta["document_id"],
+                guest=meta["guest"],
+                title=meta["title"],
+                youtube_url=meta.get("youtube_url"),
+                start_ref=meta.get("start_ref", "00:00:00"),
+                speaker=meta.get("speaker", meta["guest"]),
+                text=meta["text"],
                 vector_score=item["v_score"],
                 lexical_score=item["l_score"],
                 rrf_score=rrf,
@@ -180,11 +261,11 @@ class HybridSearchEngine:
         top_results = results[:top_k]
 
         # 5. Check threshold cutoff for refusal
-        # If top vector score < 0.40 and top lexical score < 2.0, the topic is not covered
         max_v = max((r.vector_score for r in top_results), default=0.0)
         max_l = max((r.lexical_score for r in top_results), default=0.0)
 
-        is_covered = (max_v >= 0.42 or max_l >= 2.5)
+        # High-precision threshold distinguishing genuine podcast queries from out-of-scope topics
+        is_covered = (max_v >= 0.58 or max_l >= 5.0)
 
         logger.info(
             "hybrid_search_completed",

@@ -5,6 +5,7 @@ import time
 import json
 import re
 from typing import AsyncGenerator, Dict, Any, List, Optional
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import (
     Message,
@@ -100,8 +101,24 @@ class AgentOrchestrator:
             )
             return
 
-        # 2. Hybrid Search for Grounded Transcripts
-        results, is_covered = await hybrid_search.search(user_query, db_session, top_k=6)
+        # 2. Contextualization & Hybrid Search (Preserving multi-turn context)
+        stmt = (
+            select(Message)
+            .where(Message.chat_id == session_id)
+            .order_by(Message.created_at.desc())
+            .limit(6)
+        )
+        res = await db_session.execute(stmt)
+        past_msgs = list(reversed(res.scalars().all()))
+        previous_turns = [m for m in past_msgs if m.content != user_query]
+
+        search_query = user_query
+        if previous_turns and len(user_query.split()) < 7:
+            last_user_turn = next((m.content for m in reversed(previous_turns) if m.role == "user"), "")
+            if any(p in user_query.lower().split() for p in ("he", "she", "it", "they", "that", "this", "their", "more", "size", "why", "how", "what", "team")):
+                search_query = f"{last_user_turn} {user_query}"
+
+        results, is_covered = await hybrid_search.search(search_query, db_session, top_k=4)
         citations = [r.to_citation_dict() for r in results]
 
         # 3. Refusal handling if not covered
@@ -159,17 +176,19 @@ class AgentOrchestrator:
         yield {"type": "route", "route": route}
         yield {"type": "citations", "citations": citations}
 
-        # 3. Assemble Grounded Context
+        # 3. Assemble Grounded Context (Trimmed for fast GPU prefill)
         context_chunks = []
         for idx, r in enumerate(results, 1):
+            snippet = r.text[:850].strip()
             context_chunks.append(
                 f"[Source {idx}]: Episode: '{r.title}' | Guest: {r.guest} | Time: ({r.start_ref})\n"
-                f"{r.text}\n"
+                f"{snippet}\n"
             )
         context_str = "\n---\n".join(context_chunks)
 
-        # 4. Route-specific system prompt
+        # 4. Route-specific system prompt and token budget
         if route == "ship30":
+            max_tokens_for_route = 1800
             system_prompt = (
                 "You are an expert growth essayist writing in the Ship 30 for 30 style. "
                 "Write an in-depth atomic essay of approximately 1,200 to 1,300 words grounded strictly in the provided Lenny's Podcast transcripts.\n"
@@ -181,6 +200,7 @@ class AgentOrchestrator:
                 "5. Actionable Monday-morning takeaway checklist at the end."
             )
         elif route == "artifact":
+            max_tokens_for_route = 1400
             system_prompt = (
                 "You are a principal frontend engineer and growth architect. "
                 "The user requested an interactive artifact, dashboard, or code component grounded in Lenny's Podcast transcripts.\n"
@@ -191,25 +211,30 @@ class AgentOrchestrator:
                 "- Include practical product management / growth calculations, interactive toggles, or metrics comparison based on the transcripts."
             )
         else:
+            max_tokens_for_route = 650
             system_prompt = (
                 "You are The Lenny Growth Assistant, a precise, high-signal advisory intelligence for product and growth leaders.\n"
                 "Strict Guidelines:\n"
                 "1. Answer strictly using the provided podcast transcript excerpts. Never speculate or hallucinate outside the given text.\n"
-                "2. Be concise, punchy, and direct. Do not add generic preambles, conversational filler, or extra words.\n"
+                "2. Be concise, punchy, and direct. Deliver a high-impact answer in 2 to 3 structured paragraphs or bullet points.\n"
                 "3. Answer the core question immediately in the first sentence.\n"
                 "4. Cite the relevant guest name and timestamp marker (e.g. 'Elena Verna (00:00:26)...').\n"
                 "5. Use clean bullets and bold highlights for rapid skimmability."
             )
 
         user_content = f"TRANSCRIPT EXCERPTS:\n{context_str}\n\nUSER QUESTION:\n{user_query}"
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content}
-        ]
+        messages = [{"role": "system", "content": system_prompt}]
+        for prev in previous_turns[-4:]:
+            if prev.role in ("user", "assistant"):
+                prev_text = prev.content
+                if "<think>" in prev_text and "</think>" in prev_text:
+                    prev_text = prev_text.split("</think>")[-1].strip()
+                messages.append({"role": prev.role, "content": prev_text[:500]})
+        messages.append({"role": "user", "content": user_content})
 
         # 5. Stream Generation
         accumulated_text = []
-        async for token in provider.generate_stream(messages, model=model_override):
+        async for token in provider.generate_stream(messages, model=model_override, max_tokens=max_tokens_for_route):
             accumulated_text.append(token)
             yield {"type": "token", "content": token}
 
@@ -238,6 +263,23 @@ class AgentOrchestrator:
                     "title": art.title,
                     "content": html_code
                 }
+        elif route == "ship30":
+            art = Artifact(
+                session_id=session_id,
+                type="markdown",
+                title="Ship 30 for 30 Atomic Essay",
+                content=full_response
+            )
+            db_session.add(art)
+            await db_session.flush()
+            artifact_id = art.id
+            yield {
+                "type": "artifact",
+                "id": art.id,
+                "artifact_type": "markdown",
+                "title": art.title,
+                "content": full_response
+            }
 
         # 7. Ship 30 Validation
         if route == "ship30":
@@ -316,52 +358,56 @@ class AgentOrchestrator:
             else:
                 extracted_thought = full_response.replace("<think>", "").strip()
 
-        await supabase_service.sync_message(
-            message_id=assistant_msg.id,
-            chat_id=session_id,
-            role="assistant",
-            content=full_response,
-            thought=extracted_thought,
-            citations=citations,
-            created_at=assistant_msg.created_at
-        )
-        await supabase_service.sync_response_metric(
-            chat_id=session_id,
-            message_id=assistant_msg.id,
-            model_used=active_model_name,
-            provider=active_provider_name,
-            latency_ms=latency_ms,
-            tokens_per_second=tps,
-            status="success",
-            created_at=resp_metric.created_at
-        )
-        await supabase_service.sync_token_usage(
-            chat_id=session_id,
-            model_name=active_model_name,
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            plan_type="free",
-            cost_usd=cost_usd,
-            provider=active_provider_name,
-            created_at=token_record.created_at
-        )
-
-        # 12. Asynchronous Supabase Storage Chat Archiving
-        try:
-            storage_url = await supabase_storage_service.archive_chat(
-                chat_id=session_id,
-                chat_title=user_query[:40],
-                history=[
-                    {"role": "user", "content": user_query},
-                    {"role": "assistant", "content": full_response}
-                ]
-            )
-            if storage_url:
-                logger.info("chat_archived_to_supabase_storage", storage_url=storage_url, chat_id=session_id)
-        except Exception as storage_err:
-            logger.warning("supabase_storage_archive_warning", error=str(storage_err))
-
+        # Yield done immediately so client UI finishes rendering with zero delay
         yield {"type": "done", "latency_ms": latency_ms, "artifact_id": artifact_id}
+
+        # Background sync to Supabase (non-blocking)
+        async def _background_supabase_sync():
+            try:
+                await supabase_service.sync_message(
+                    message_id=assistant_msg.id,
+                    chat_id=session_id,
+                    role="assistant",
+                    content=full_response,
+                    thought=extracted_thought,
+                    citations=citations,
+                    created_at=assistant_msg.created_at
+                )
+                await supabase_service.sync_response_metric(
+                    chat_id=session_id,
+                    message_id=assistant_msg.id,
+                    model_used=active_model_name,
+                    provider=active_provider_name,
+                    latency_ms=latency_ms,
+                    tokens_per_second=tps,
+                    status="success",
+                    created_at=resp_metric.created_at
+                )
+                await supabase_service.sync_token_usage(
+                    chat_id=session_id,
+                    model_name=active_model_name,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    plan_type="free",
+                    cost_usd=cost_usd,
+                    provider=active_provider_name,
+                    created_at=token_record.created_at
+                )
+                storage_url = await supabase_storage_service.archive_chat(
+                    chat_id=session_id,
+                    chat_title=user_query[:40],
+                    history=[
+                        {"role": "user", "content": user_query},
+                        {"role": "assistant", "content": full_response}
+                    ]
+                )
+                if storage_url:
+                    logger.info("chat_archived_to_supabase_storage", storage_url=storage_url, chat_id=session_id)
+            except Exception as sync_err:
+                logger.warning("background_supabase_sync_error", error=str(sync_err))
+
+        import asyncio
+        asyncio.create_task(_background_supabase_sync())
 
 
 agent_orchestrator = AgentOrchestrator()

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Artifact } from '../types/chat';
 
 interface ArtifactViewerProps {
@@ -15,6 +17,8 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
 
   if (!artifact) return null;
+
+  const isMarkdown = artifact.type === 'markdown' || (!artifact.content.includes('<html') && !artifact.content.includes('<div') && !artifact.content.includes('<!DOCTYPE'));
 
   // Prepare sandboxed HTML content with strict CSP and dark theme wrapper if needed
   const secureSandboxSrc = `<!DOCTYPE html>
@@ -43,14 +47,16 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([artifact.content], { type: 'text/html' });
+    const mimeType = isMarkdown ? 'text/markdown' : 'text/html';
+    const ext = isMarkdown ? 'md' : 'html';
+    const blob = new Blob([artifact.content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${artifact.title.toLowerCase().replace(/\s+/g, '-') || 'artifact'}.html`;
+    a.download = `${artifact.title.toLowerCase().replace(/\s+/g, '-') || 'artifact'}.${ext}`;
     a.click();
     URL.revokeObjectURL(url);
-    onShowToast('Downloaded artifact file.');
+    onShowToast(`Downloaded artifact (${ext.toUpperCase()}).`);
   };
 
   return (
@@ -142,12 +148,20 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({
       {/* Content Area */}
       <div className="flex-1 overflow-hidden relative bg-[#0e1017]">
         {activeTab === 'preview' ? (
-          <iframe
-            title="Artifact Preview Sandbox"
-            srcDoc={secureSandboxSrc}
-            sandbox="allow-scripts"
-            className="w-full h-full border-none"
-          />
+          isMarkdown ? (
+            <div className="w-full h-full p-6 overflow-auto text-[#EDE4DA] leading-relaxed text-sm bg-[#12141c]">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {artifact.content}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <iframe
+              title="Artifact Preview Sandbox"
+              srcDoc={secureSandboxSrc}
+              sandbox="allow-scripts"
+              className="w-full h-full border-none"
+            />
+          )
         ) : (
           <pre className="w-full h-full p-4 overflow-auto font-mono text-xs text-[#FAF6F0] bg-[#12141c] leading-relaxed">
             <code>{artifact.content}</code>

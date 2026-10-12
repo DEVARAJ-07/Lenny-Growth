@@ -41,22 +41,22 @@ async def send_message_stream(
     db.add(user_msg)
     await db.commit()
 
-    # Real-time sync to Supabase
-    await supabase_service.sync_message(
+    # Non-blocking background sync to Supabase
+    asyncio.create_task(supabase_service.sync_message(
         message_id=user_msg.id,
         chat_id=session_id,
         role="user",
         content=payload.content,
         created_at=user_msg.created_at
-    )
-    await supabase_service.sync_chat(
+    ))
+    asyncio.create_task(supabase_service.sync_chat(
         chat_id=sess.id,
         title=sess.title,
         plan_tier=sess.plan_tier,
         model=sess.model,
         provider=sess.provider,
         updated_at=sess.updated_at
-    )
+    ))
 
     async def sse_event_generator():
         # Open independent async DB session for streaming
@@ -71,7 +71,6 @@ async def send_message_stream(
                 ):
                     event_data = json.dumps(event)
                     yield f"data: {event_data}\n\n"
-                    await asyncio.sleep(0.005)  # smooth SSE packet flush
             except Exception as e:
                 logger.exception("streaming_error", error=str(e), session_id=session_id)
                 error_payload = json.dumps({

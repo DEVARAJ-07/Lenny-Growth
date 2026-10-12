@@ -1,0 +1,15 @@
+{
+  "chat_id": "d1778108-d6f3-4f6b-a329-f278899e3eac",
+  "title": "What does Gustaf Alstromer from YC say i",
+  "archived_at": "2026-10-12T03:59:08.002664+00:00",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What does Gustaf Alstromer from YC say is the most important metric for startups?"
+    },
+    {
+      "role": "assistant",
+      "content": "Gustaf Alstromer from YC emphasizes that talking to customers is the most important metric for startups. He states, \"If you don't talk to customers or users, you don't actually know what's important. If you don't know what's important, it doesn't matter what you build, it doesn't matter kind of what ideas you have in your head if you don't actually know what it is that you need to build and you don't validate with customers.\""
+    }
+  ]
+}

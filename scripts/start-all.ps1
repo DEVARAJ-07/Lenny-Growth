@@ -27,8 +27,9 @@ try {
 
 if (-not $backendUp) {
     Write-Host "Starting FastAPI Backend Server on http://127.0.0.1:8000..." -ForegroundColor Yellow
-    Start-Process powershell -ArgumentList "-Command & '.\.venv\Scripts\python.exe' -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000" -WindowStyle Minimized
-    Start-Sleep -Seconds 2
+    $root = Resolve-Path "$PSScriptRoot\.."
+    Start-Process powershell -WorkingDirectory $root -ArgumentList "-NoExit -Command & '$root\.venv\Scripts\python.exe' -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000" -WindowStyle Minimized
+    Start-Sleep -Seconds 4
 } else {
     Write-Host "FastAPI Backend is active on port 8000!" -ForegroundColor Green
 }
